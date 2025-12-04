@@ -4,7 +4,14 @@
   "description": "React package built around aria live regions for announcing dynamic content changes to screen readers.",
   "keywords": [
     "react",
-    "typescript"
+    "typescript",
+    "accessibility",
+    "a11y",
+    "aria",
+    "aria-live",
+    "screen-reader",
+    "live-region",
+    "announcements"
   ],
   "homepage": "https://github.com/umxr/react-aria-live",
   "bugs": {
@@ -30,10 +37,30 @@
   },
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./test": {
+      "types": "./dist/test/index.d.ts",
+      "import": "./dist/test/index.js"
+    }
+  },
   "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "jsdom": "^26.0.0",
     "prettier": "^3.7.4",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   }
