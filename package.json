@@ -1,0 +1,33 @@
+{
+  "name": "@umxr/react-aria-live",
+  "version": "1.0.0",
+  "description": "React package built around aria live regions for announcing dynamic content changes to screen readers.",
+  "keywords": [
+    "react",
+    "typescript"
+  ],
+  "homepage": "https://github.com/umxr/react-aria-live",
+  "bugs": {
+    "url": "https://github.com/umxr/react-aria-live/issues"
+  },
+  "author": "Umar Gora <hello@umar.codes> (https://umar.codes)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/umxr/react-aria-live.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "ci": "npm run build",
+    "format": "prettier --write ."
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3"
+  }
+}
