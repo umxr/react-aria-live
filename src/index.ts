@@ -9,6 +9,7 @@ export { useLiveRegion } from './hooks/useLiveRegion.js';
 // Components
 export { LiveRegion } from './components/LiveRegion.js';
 export { Announce } from './components/Announce.js';
+export { Announcer } from './components/Announcer.js';
 export { Alert } from './components/Alert.js';
 export { Status } from './components/Status.js';
 export { Log } from './components/Log.js';
@@ -23,6 +24,7 @@ export type {
   LiveRegionRole,
   LiveRegionProps,
   AnnounceProps,
+  AnnouncerProps,
   AlertProps,
   StatusProps,
   LogProps,

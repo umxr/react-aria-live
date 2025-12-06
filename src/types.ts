@@ -66,3 +66,7 @@ export interface LogProps {
   children: ReactNode;
   className?: string;
 }
+
+export interface AnnouncerProps {
+  id?: string;
+}
