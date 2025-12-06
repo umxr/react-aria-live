@@ -126,6 +126,35 @@ Component for one-off announcements without rendering visible content.
 | `message`  | `string`                  | required   | Message to announce  |
 | `priority` | `'polite' \| 'assertive'` | `'polite'` | Announcement urgency |
 
+### Announcer
+
+Renders live region elements that can be placed inside modals or other focus-trapped containers.
+
+By default, the library creates announcer elements at the document body level. However, screen readers may not announce content from live regions outside a focused modal. Use the `Announcer` component inside your modal to ensure announcements are heard.
+
+```tsx
+import { Announcer } from '@umxr/react-aria-live';
+
+function Modal({ children }) {
+  return (
+    <div role="dialog" aria-modal="true">
+      <Announcer />
+      {children}
+    </div>
+  );
+}
+```
+
+| Prop | Type     | Default        | Description                      |
+| ---- | -------- | -------------- | -------------------------------- |
+| `id` | `string` | auto-generated | ID prefix for announcer elements |
+
+**How it works:**
+
+- All `Announcer` components subscribe to the same announcement queue
+- When `useAnnounce()` is called, ALL mounted announcers receive the message
+- The screen reader hears the announcer that's in the active focus context
+
 ### Specialized Components
 
 Pre-configured components for common patterns:
