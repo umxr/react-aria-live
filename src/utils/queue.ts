@@ -9,12 +9,14 @@ export function generateId(): string {
 export function createAnnouncement(
   message: string,
   priority: 'polite' | 'assertive',
+  clearAfter?: number,
 ): Announcement {
   return {
     id: generateId(),
     message,
     priority,
     timestamp: Date.now(),
+    clearAfter,
   };
 }
 

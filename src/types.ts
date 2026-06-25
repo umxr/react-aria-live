@@ -10,6 +10,7 @@ export interface AnnounceOptions {
   priority?: 'polite' | 'assertive';
   clearQueue?: boolean;
   delay?: number;
+  clearAfter?: number;
 }
 
 export interface Announcement {
@@ -17,6 +18,7 @@ export interface Announcement {
   message: string;
   priority: 'polite' | 'assertive';
   timestamp: number;
+  clearAfter?: number;
 }
 
 export interface AnnouncementQueue {
