@@ -30,6 +30,23 @@ export function LiveRegionProvider({
 }: LiveRegionProviderProps) {
   const [queue, setQueue] = useState<Announcement[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimeoutsRef = useRef<{
+    polite: ReturnType<typeof setTimeout> | null;
+    assertive: ReturnType<typeof setTimeout> | null;
+  }>({ polite: null, assertive: null });
+
+  const cancelClearTimeout = useCallback((priority: 'polite' | 'assertive') => {
+    const existing = clearTimeoutsRef.current[priority];
+    if (existing) {
+      clearTimeout(existing);
+      clearTimeoutsRef.current[priority] = null;
+    }
+  }, []);
+
+  const cancelAllClearTimeouts = useCallback(() => {
+    cancelClearTimeout('polite');
+    cancelClearTimeout('assertive');
+  }, [cancelClearTimeout]);
 
   useEffect(() => {
     setupAnnouncer();
@@ -41,13 +58,15 @@ export function LiveRegionProvider({
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      cancelAllClearTimeouts();
     };
-  }, [clearOnUnmount]);
+  }, [clearOnUnmount, cancelAllClearTimeouts]);
 
   const clearQueue = useCallback(() => {
+    cancelAllClearTimeouts();
     setQueue([]);
     clearAnnouncer();
-  }, []);
+  }, [cancelAllClearTimeouts]);
 
   const announce = useCallback(
     (message: string, options: AnnounceOptions = {}) => {
@@ -55,6 +74,7 @@ export function LiveRegionProvider({
         priority = 'polite',
         clearQueue: shouldClear,
         delay = 0,
+        clearAfter = 0,
       } = options;
 
       if (!message.trim()) {
@@ -68,11 +88,27 @@ export function LiveRegionProvider({
           }
 
           if (shouldClear) {
+            cancelAllClearTimeouts();
             clearAnnouncer();
           }
 
-          const announcement = createAnnouncement(message, priority);
+          const announcement = createAnnouncement(
+            message,
+            priority,
+            clearAfter,
+          );
           announceMessage(message, priority);
+
+          // A new message now occupies this region. Cancel any pending clear
+          // for this priority so a stale timer can't wipe it, then schedule a
+          // fresh clear if requested.
+          cancelClearTimeout(priority);
+          if (clearAfter > 0) {
+            clearTimeoutsRef.current[priority] = setTimeout(() => {
+              clearAnnouncer(priority);
+              clearTimeoutsRef.current[priority] = null;
+            }, clearAfter);
+          }
 
           const newQueue = shouldClear
             ? [announcement]
@@ -90,7 +126,7 @@ export function LiveRegionProvider({
         doAnnounce();
       }
     },
-    [],
+    [cancelAllClearTimeouts, cancelClearTimeout],
   );
 
   const value = useMemo<LiveRegionContextValue>(

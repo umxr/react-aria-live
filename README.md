@@ -67,15 +67,19 @@ announce('Auto-saved', { delay: 1000 });
 
 // Clear queue before announcing
 announce('New message', { clearQueue: true });
+
+// Clear the region after a delay so the same message can be announced again
+announce('Cart note saved', { clearAfter: 500 });
 ```
 
 **Options:**
 
-| Option       | Type                      | Default    | Description                       |
-| ------------ | ------------------------- | ---------- | --------------------------------- |
-| `priority`   | `'polite' \| 'assertive'` | `'polite'` | Announcement urgency              |
-| `clearQueue` | `boolean`                 | `false`    | Clear pending announcements first |
-| `delay`      | `number`                  | `0`        | Delay in milliseconds             |
+| Option       | Type                      | Default    | Description                                                                                             |
+| ------------ | ------------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| `priority`   | `'polite' \| 'assertive'` | `'polite'` | Announcement urgency                                                                                    |
+| `clearQueue` | `boolean`                 | `false`    | Clear pending announcements first                                                                       |
+| `delay`      | `number`                  | `0`        | Delay in milliseconds                                                                                   |
+| `clearAfter` | `number`                  | `0`        | Clear the live region this many ms after announcing, so an identical message announced later is re-read |
 
 ### useAnnouncementQueue
 

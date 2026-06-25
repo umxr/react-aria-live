@@ -12,6 +12,14 @@ function TestComponent() {
       <button onClick={() => announce('Urgent!', { priority: 'assertive' })}>
         Announce Assertive
       </button>
+      <button onClick={() => announce('Auto clear', { clearAfter: 500 })}>
+        Announce Clear After
+      </button>
+      <button
+        onClick={() => announce('Second auto clear', { clearAfter: 5000 })}
+      >
+        Announce Clear After 2
+      </button>
     </div>
   );
 }
@@ -165,5 +173,55 @@ describe('Announcer', () => {
     // IDs should be different
     const ids = Array.from(liveRegions).map((el) => el.id);
     expect(ids[0]).not.toBe(ids[1]);
+  });
+
+  it('clears its region after clearAfter ms', () => {
+    render(
+      <LiveRegionProvider>
+        <Announcer id="test" />
+        <TestComponent />
+      </LiveRegionProvider>,
+    );
+
+    act(() => {
+      screen.getByText('Announce Clear After').click();
+    });
+    vi.advanceTimersToNextFrame();
+
+    const politeEl = document.getElementById('test-polite');
+    expect(politeEl?.textContent).toBe('Auto clear');
+
+    vi.advanceTimersByTime(500);
+    expect(politeEl?.textContent).toBe('');
+  });
+
+  it('cancels a pending clear when a newer message replaces it', () => {
+    render(
+      <LiveRegionProvider>
+        <Announcer id="test" />
+        <TestComponent />
+      </LiveRegionProvider>,
+    );
+
+    const politeEl = document.getElementById('test-polite');
+
+    act(() => {
+      screen.getByText('Announce Clear After').click();
+    });
+    vi.advanceTimersToNextFrame();
+    expect(politeEl?.textContent).toBe('Auto clear');
+
+    vi.advanceTimersByTime(300);
+
+    act(() => {
+      screen.getByText('Announce Clear After 2').click();
+    });
+    vi.advanceTimersToNextFrame();
+    expect(politeEl?.textContent).toBe('Second auto clear');
+
+    // Past the first message's original 500ms deadline; the newer message
+    // must NOT be wiped by the cancelled timer.
+    vi.advanceTimersByTime(300);
+    expect(politeEl?.textContent).toBe('Second auto clear');
   });
 });

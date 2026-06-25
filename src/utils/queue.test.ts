@@ -28,6 +28,16 @@ describe('queue utilities', () => {
       const announcement = createAnnouncement('Urgent!', 'assertive');
       expect(announcement.priority).toBe('assertive');
     });
+
+    it('stores clearAfter when provided', () => {
+      const announcement = createAnnouncement('Saved', 'polite', 500);
+      expect(announcement.clearAfter).toBe(500);
+    });
+
+    it('leaves clearAfter undefined when not provided', () => {
+      const announcement = createAnnouncement('Saved', 'polite');
+      expect(announcement.clearAfter).toBeUndefined();
+    });
   });
 
   describe('isDuplicate', () => {
