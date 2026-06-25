@@ -22,11 +22,13 @@
 ### Task 1: Data model — `clearAfter` on options, announcement, and `createAnnouncement`
 
 **Files:**
+
 - Modify: `src/types.ts`
 - Modify: `src/utils/queue.ts`
 - Test: `src/utils/queue.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing (first task).
 - Produces:
   - `AnnounceOptions.clearAfter?: number`
@@ -38,15 +40,15 @@
 Add these two tests inside the existing `describe('createAnnouncement', ...)` block in `src/utils/queue.test.ts` (after the existing `creates assertive announcements` test):
 
 ```ts
-    it('stores clearAfter when provided', () => {
-      const announcement = createAnnouncement('Saved', 'polite', 500);
-      expect(announcement.clearAfter).toBe(500);
-    });
+it('stores clearAfter when provided', () => {
+  const announcement = createAnnouncement('Saved', 'polite', 500);
+  expect(announcement.clearAfter).toBe(500);
+});
 
-    it('leaves clearAfter undefined when not provided', () => {
-      const announcement = createAnnouncement('Saved', 'polite');
-      expect(announcement.clearAfter).toBeUndefined();
-    });
+it('leaves clearAfter undefined when not provided', () => {
+  const announcement = createAnnouncement('Saved', 'polite');
+  expect(announcement.clearAfter).toBeUndefined();
+});
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -113,10 +115,12 @@ git commit -m "feat: add clearAfter to AnnounceOptions, Announcement, and create
 ### Task 2: Body-level region clears after `clearAfter` ms
 
 **Files:**
+
 - Modify: `src/context/LiveRegionContext.tsx`
 - Test: `src/context/LiveRegionContext.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `createAnnouncement(message, priority, clearAfter?)` and `AnnounceOptions.clearAfter` from Task 1; `clearAnnouncer(priority?)` from `src/utils/announcer.js` (already clears a specific priority's element, or all when no argument).
 - Produces: `announce(message, { clearAfter })` schedules `clearAnnouncer(priority)` after `clearAfter` ms; per-priority pending clear timers are cancelled when a newer message takes the same priority region, on `clearQueue`, on `clearQueue: true`, and on unmount.
 
@@ -129,9 +133,13 @@ function ClearAfterConsumer() {
   const { announce } = useLiveRegionContext();
   return (
     <div>
-      <button onClick={() => announce('Saved', { clearAfter: 500 })}>Save</button>
+      <button onClick={() => announce('Saved', { clearAfter: 500 })}>
+        Save
+      </button>
       <button onClick={() => announce('Saved')}>Save No Clear</button>
-      <button onClick={() => announce('First', { clearAfter: 500 })}>First</button>
+      <button onClick={() => announce('First', { clearAfter: 500 })}>
+        First
+      </button>
       <button onClick={() => announce('Second', { clearAfter: 5000 })}>
         Second
       </button>
@@ -321,16 +329,13 @@ export function LiveRegionProvider({
     assertive: ReturnType<typeof setTimeout> | null;
   }>({ polite: null, assertive: null });
 
-  const cancelClearTimeout = useCallback(
-    (priority: 'polite' | 'assertive') => {
-      const existing = clearTimeoutsRef.current[priority];
-      if (existing) {
-        clearTimeout(existing);
-        clearTimeoutsRef.current[priority] = null;
-      }
-    },
-    [],
-  );
+  const cancelClearTimeout = useCallback((priority: 'polite' | 'assertive') => {
+    const existing = clearTimeoutsRef.current[priority];
+    if (existing) {
+      clearTimeout(existing);
+      clearTimeoutsRef.current[priority] = null;
+    }
+  }, []);
 
   const cancelAllClearTimeouts = useCallback(() => {
     cancelClearTimeout('polite');
@@ -381,7 +386,11 @@ export function LiveRegionProvider({
             clearAnnouncer();
           }
 
-          const announcement = createAnnouncement(message, priority, clearAfter);
+          const announcement = createAnnouncement(
+            message,
+            priority,
+            clearAfter,
+          );
           announceMessage(message, priority);
 
           // A new message now occupies this region. Cancel any pending clear
@@ -466,10 +475,12 @@ git commit -m "feat: clear body-level live region after clearAfter ms"
 ### Task 3: Modal `<Announcer />` clears after `clearAfter` ms
 
 **Files:**
+
 - Modify: `src/components/Announcer.tsx`
 - Test: `src/components/Announcer.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `Announcement.clearAfter` from Task 1; the announcement queue from `useLiveRegionContext()`.
 - Produces: a mounted `<Announcer />` clears its own polite/assertive `textContent` `clearAfter` ms after writing a message, cancels a pending clear when a newer message takes that region, and clears timers on unmount.
 
@@ -478,33 +489,33 @@ git commit -m "feat: clear body-level live region after clearAfter ms"
 In `src/components/Announcer.test.tsx`, add a button to the existing `TestComponent` (inside its returned `<div>`, after the `Announce Assertive` button):
 
 ```tsx
-      <button onClick={() => announce('Auto clear', { clearAfter: 500 })}>
-        Announce Clear After
-      </button>
+<button onClick={() => announce('Auto clear', { clearAfter: 500 })}>
+  Announce Clear After
+</button>
 ```
 
 Then add this test at the end of the `describe('Announcer', ...)` block:
 
 ```tsx
-  it('clears its region after clearAfter ms', () => {
-    render(
-      <LiveRegionProvider>
-        <Announcer id="test" />
-        <TestComponent />
-      </LiveRegionProvider>,
-    );
+it('clears its region after clearAfter ms', () => {
+  render(
+    <LiveRegionProvider>
+      <Announcer id="test" />
+      <TestComponent />
+    </LiveRegionProvider>,
+  );
 
-    act(() => {
-      screen.getByText('Announce Clear After').click();
-    });
-    vi.advanceTimersToNextFrame();
-
-    const politeEl = document.getElementById('test-polite');
-    expect(politeEl?.textContent).toBe('Auto clear');
-
-    vi.advanceTimersByTime(500);
-    expect(politeEl?.textContent).toBe('');
+  act(() => {
+    screen.getByText('Announce Clear After').click();
   });
+  vi.advanceTimersToNextFrame();
+
+  const politeEl = document.getElementById('test-polite');
+  expect(politeEl?.textContent).toBe('Auto clear');
+
+  vi.advanceTimersByTime(500);
+  expect(politeEl?.textContent).toBe('');
+});
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -516,7 +527,7 @@ Expected: FAIL — `clears its region after clearAfter ms` fails because `test-p
 
 Replace the entire contents of `src/components/Announcer.tsx` with:
 
-```tsx
+````tsx
 import { useEffect, useRef, useId } from 'react';
 import type { RefObject } from 'react';
 import type { Announcement } from '../types.js';
@@ -642,7 +653,7 @@ export function Announcer({ id }: AnnouncerProps) {
     </>
   );
 }
-```
+````
 
 - [ ] **Step 4: Run the test to verify it passes**
 
@@ -662,10 +673,12 @@ git commit -m "feat: clear modal Announcer region after clearAfter ms"
 ### Task 4: Documentation and changeset
 
 **Files:**
+
 - Modify: `README.md`
 - Create: `.changeset/clear-after-announce-option.md`
 
 **Interfaces:**
+
 - Consumes: the public `clearAfter` option from Tasks 1–3.
 - Produces: documentation and a release note. No runtime code.
 
@@ -681,7 +694,7 @@ announce('Cart note saved', { clearAfter: 500 });
 Then add this row to the `**Options:**` table immediately after the `delay` row:
 
 ```markdown
-| `clearAfter` | `number`                  | `0`        | Clear the live region this many ms after announcing, so an identical message announced later is re-read |
+| `clearAfter` | `number` | `0` | Clear the live region this many ms after announcing, so an identical message announced later is re-read |
 ```
 
 - [ ] **Step 2: Create the changeset**
@@ -715,6 +728,7 @@ git commit -m "docs: document clearAfter option and add changeset"
 ## Self-Review
 
 **Spec coverage:**
+
 - API `clearAfter?: number` on `AnnounceOptions` → Task 1. ✓
 - Stored on `Announcement` / `createAnnouncement` → Task 1. ✓
 - Body-level region clears after delay → Task 2. ✓
