@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
+import { StrictMode } from 'react';
 import {
   LiveRegionProvider,
   useLiveRegionContext,
@@ -271,5 +272,36 @@ describe('clearAfter option', () => {
 
     vi.advanceTimersByTime(500);
     expect(el?.textContent).toBe('');
+  });
+
+  it('keeps a newer message under StrictMode (no leaked clear timer)', () => {
+    render(
+      <StrictMode>
+        <LiveRegionProvider>
+          <ClearAfterConsumer />
+        </LiveRegionProvider>
+      </StrictMode>,
+    );
+
+    const el = document.getElementById('react-aria-live-polite');
+
+    act(() => {
+      screen.getByText('First').click();
+    });
+    vi.advanceTimersToNextFrame();
+    expect(el?.textContent).toBe('First');
+
+    vi.advanceTimersByTime(300);
+
+    act(() => {
+      screen.getByText('Second').click();
+    });
+    vi.advanceTimersToNextFrame();
+    expect(el?.textContent).toBe('Second');
+
+    // StrictMode double-invokes the announce updater; verify no stale/leaked
+    // timer from 'First' wipes 'Second' at First's original 500ms deadline.
+    vi.advanceTimersByTime(300);
+    expect(el?.textContent).toBe('Second');
   });
 });
