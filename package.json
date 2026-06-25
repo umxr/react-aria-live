@@ -1,6 +1,6 @@
 {
   "name": "@umxr/react-aria-live",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "React package built around aria live regions for announcing dynamic content changes to screen readers.",
   "keywords": [
     "react",

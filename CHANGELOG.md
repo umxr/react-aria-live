@@ -1,5 +1,11 @@
 # @umxr/react-aria-live
 
+## 1.1.0
+
+### Minor Changes
+
+- bb4b44b: Add a `clearAfter` option to `announce()`. When set, the live region is cleared after the given number of milliseconds, so announcing the same message again is detected as a content change and re-read by screen readers. Both the default body-level region and the modal `<Announcer />` component honor it. Resolves #3.
+
 ## 1.0.1
 
 ### Patch Changes
