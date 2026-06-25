@@ -1,4 +1,6 @@
 import { useEffect, useRef, useId } from 'react';
+import type { RefObject } from 'react';
+import type { Announcement } from '../types.js';
 import { useLiveRegionContext } from '../context/LiveRegionContext.js';
 import { VISUALLY_HIDDEN_STYLES } from '../utils/constants.js';
 
@@ -35,9 +37,48 @@ export function Announcer({ id }: AnnouncerProps) {
     polite: '',
     assertive: '',
   });
+  const clearTimeoutsRef = useRef<{
+    polite: ReturnType<typeof setTimeout> | null;
+    assertive: ReturnType<typeof setTimeout> | null;
+  }>({ polite: null, assertive: null });
 
   useEffect(() => {
-    // Find the most recent announcement for each priority
+    const announceTo = (
+      ref: RefObject<HTMLDivElement | null>,
+      latest: Announcement | undefined,
+      priority: 'polite' | 'assertive',
+    ) => {
+      if (
+        !latest ||
+        !ref.current ||
+        lastAnnouncedRef.current[priority] === latest.id
+      ) {
+        return;
+      }
+
+      lastAnnouncedRef.current[priority] = latest.id;
+      const el = ref.current;
+
+      // A new message now occupies this region; cancel any pending clear.
+      const pending = clearTimeoutsRef.current[priority];
+      if (pending) {
+        clearTimeout(pending);
+        clearTimeoutsRef.current[priority] = null;
+      }
+
+      el.textContent = '';
+      requestAnimationFrame(() => {
+        el.textContent = latest.message;
+      });
+
+      if (latest.clearAfter && latest.clearAfter > 0) {
+        clearTimeoutsRef.current[priority] = setTimeout(() => {
+          el.textContent = '';
+          clearTimeoutsRef.current[priority] = null;
+        }, latest.clearAfter);
+      }
+    };
+
     const latestPolite = [...queue]
       .reverse()
       .find((a) => a.priority === 'polite');
@@ -45,34 +86,21 @@ export function Announcer({ id }: AnnouncerProps) {
       .reverse()
       .find((a) => a.priority === 'assertive');
 
-    // Announce polite messages
-    if (
-      latestPolite &&
-      politeRef.current &&
-      lastAnnouncedRef.current.polite !== latestPolite.id
-    ) {
-      lastAnnouncedRef.current.polite = latestPolite.id;
-      const el = politeRef.current;
-      el.textContent = '';
-      requestAnimationFrame(() => {
-        el.textContent = latestPolite.message;
-      });
-    }
-
-    // Announce assertive messages
-    if (
-      latestAssertive &&
-      assertiveRef.current &&
-      lastAnnouncedRef.current.assertive !== latestAssertive.id
-    ) {
-      lastAnnouncedRef.current.assertive = latestAssertive.id;
-      const el = assertiveRef.current;
-      el.textContent = '';
-      requestAnimationFrame(() => {
-        el.textContent = latestAssertive.message;
-      });
-    }
+    announceTo(politeRef, latestPolite, 'polite');
+    announceTo(assertiveRef, latestAssertive, 'assertive');
   }, [queue]);
+
+  useEffect(() => {
+    const timeouts = clearTimeoutsRef.current;
+    return () => {
+      if (timeouts.polite) {
+        clearTimeout(timeouts.polite);
+      }
+      if (timeouts.assertive) {
+        clearTimeout(timeouts.assertive);
+      }
+    };
+  }, []);
 
   return (
     <>

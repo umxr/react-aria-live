@@ -12,6 +12,9 @@ function TestComponent() {
       <button onClick={() => announce('Urgent!', { priority: 'assertive' })}>
         Announce Assertive
       </button>
+      <button onClick={() => announce('Auto clear', { clearAfter: 500 })}>
+        Announce Clear After
+      </button>
     </div>
   );
 }
@@ -165,5 +168,25 @@ describe('Announcer', () => {
     // IDs should be different
     const ids = Array.from(liveRegions).map((el) => el.id);
     expect(ids[0]).not.toBe(ids[1]);
+  });
+
+  it('clears its region after clearAfter ms', () => {
+    render(
+      <LiveRegionProvider>
+        <Announcer id="test" />
+        <TestComponent />
+      </LiveRegionProvider>,
+    );
+
+    act(() => {
+      screen.getByText('Announce Clear After').click();
+    });
+    vi.advanceTimersToNextFrame();
+
+    const politeEl = document.getElementById('test-polite');
+    expect(politeEl?.textContent).toBe('Auto clear');
+
+    vi.advanceTimersByTime(500);
+    expect(politeEl?.textContent).toBe('');
   });
 });
